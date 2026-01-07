@@ -10,6 +10,7 @@ from django.utils import timezone
 from .serializers import EventSerializer, EventResponseSerializer
 from .models import Event
 from .storage import memory_store
+from .tracking import tracking_client
 
 def get_request_id(request):
     request_id = request.headers.get('X-Request-ID')
@@ -94,6 +95,22 @@ class EventView(APIView):
                 "request_id": event.request_id
             })
             print(f"DEBUG memory_store after append: {len(memory_store)}")
+            try:
+                tracking_client.track_event(
+                    user_id=event.user_id,
+                    event_name=event.event,
+                    properties={
+                    'event_id': event_id,
+                    'client_ts': event.client_ts.isoformat(),
+                    'metadata': event.metadata,
+                    'source': 'api_v1'
+                },request_id=event.request_id)
+
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Tracking error for event {event.id}: {str(e)}", exc_info=True)
+                    
             response_data = {
                 "event_id": event.id,
                 "received_at": event.received_at.isoformat(),

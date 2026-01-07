@@ -53,10 +53,11 @@ class TrackingClient:
         }
 
         for vendor, payload in vendor_payloads.items():
+            logger.info(f"TRACK: {vendor}: {json.dumps(payload)}")
             try:
                 self._send_to_vendor(vendor, payload)
             except Exception as e:
-                logger.error(f"Failed to send to {vendor}: {str(e)}",exc_inf = True)
+                logger.error(f"Failed to send to {vendor}: {str(e)}", exc_info=True)
 
         return True
     def _build_segment_payload(self, base_payload:Dict[str, Any])->Dict[str, Any]:
