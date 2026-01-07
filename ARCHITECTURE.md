@@ -65,3 +65,25 @@ post /api/events
   }
 }
 ```
+### Tracking Integration Point
+
+**Location in flow**: Tracking is called **after successful event storage** but **before returning response**.
+
+**Reasoning**:
+Event storage is primary: Ensure data persistence even if tracking fails
+Non-blocking: Tracking should not block the user's request
+
+
+### Vendor Failure Strategy
+
+**Strategy**: **Async retry with**
+- Retrying in the background, without blocking the main request/response flow.
+
+**Implementation**:
+```python
+try:
+    tracking_client.track_event(user_id, event_name, properties, request_id)
+except Exception as e:
+    # 1. Log failure (already captured by logger)
+    # 2. Queue for async retry (Celery task)
+    # 3. Continue request flow - DO NOT FAIL
