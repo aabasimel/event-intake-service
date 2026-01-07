@@ -7,18 +7,66 @@ import json
 from datetime import datetime
 from django.utils import timezone
 
-from .serializers import EventSerializer
+from .serializers import EventSerializer, EventResponseSerializer
 from .models import Event
 from .storage import memory_store
 
-class EventCreateView(APIView):
-    
+def get_request_id(request):
+    request_id = request.headers.get('X-Request-ID')
+    if request_id:
+        return request_id
+    return str(uuid.uuid4())[:8]
+class EventView(APIView):
+
     def get(self, request):
-        """View memory_store contents"""
-        return Response({"memory_store": memory_store})
+        request_id = get_request_id(request)
+        user_id = request.query_params.get('user_id')
+        limit = request.query_params.get('limit', 20)
+
+        if not user_id:
+            response = Response(
+                {
+                    "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Missing required parameter",
+                        "details": {"user_id": "This query parameter is required."}
+                    }
+
+                }, status=status.HTTP_400_BAD_REQUEST
+            )
+            response['X-Request-ID'] = request_id
+            return response 
+        try:
+            limit = int(limit)
+            if limit <=0:
+                raise ValueError("Limit must be positive")
+            if limit > 100:
+                limit = 100
+        except ValueError:
+            response = Response({
+                "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Invalid parameter",
+                        "details": {"limit": ["Must be a positive integer ≤ 100"]}
+                    }
+            }, status=status.HTTP_400_BAD_REQUEST)
+            response['X-Request-ID'] = request_id
+            return response
+        user_events = [event for event in memory_store if event['user_id'] == user_id]
+
+        user_events = user_events[:limit]
+        serializer = EventResponseSerializer(user_events, many=True)
+        response = Response({
+                "events": serializer.data,
+                "count": len(user_events),
+                "user_id": user_id
+            },
+            status=status.HTTP_200_OK)
+        response['X-Request-ID'] = request_id
+        return response
 
     def post(self,request):
-        request_id = str(uuid.uuid4())[:8]
+        request_id = get_request_id(request)
         event_id = f"evt_{uuid.uuid4().hex[:8]}"
         data = request.data.copy()
         data['request_id'] = request_id
@@ -35,8 +83,8 @@ class EventCreateView(APIView):
                 request_id=validated_data['request_id']
             )
             event.save()
-            print(f"DEBUG: Appending to memory_store. Current length: {len(memory_store)}")
-            memory_store.append({
+            print(f"DEBUG memory_store before append: {len(memory_store)}")
+            memory_store.insert(0, {
                 "id": event.id,
                 "event": event.event,
                 "user_id": event.user_id,
@@ -45,7 +93,7 @@ class EventCreateView(APIView):
                 "metadata": event.metadata,
                 "request_id": event.request_id
             })
-            print(f"DEBUG: After append. memory_store length: {len(memory_store)}")
+            print(f"DEBUG memory_store after append: {len(memory_store)}")
             response_data = {
                 "event_id": event.id,
                 "received_at": event.received_at.isoformat(),

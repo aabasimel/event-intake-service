@@ -39,3 +39,12 @@ class EventSerializer(serializers.Serializer):
         if 'client_ts' not in attrs or attrs['client_ts'] is None:
             attrs['client_ts'] = timezone.now()
         return attrs
+class EventResponseSerializer(serializers.Serializer):
+    """Serializer for GET response"""
+    id = serializers.CharField()
+    received_at = serializers.CharField()
+    client_ts = serializers.CharField()
+    event = serializers.CharField()
+    user_id = serializers.CharField()
+    metadata = serializers.DictField()
+    request_id = serializers.CharField()
