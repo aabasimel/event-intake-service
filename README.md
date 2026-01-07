@@ -4,14 +4,13 @@ A Django REST API for ingesting, validating, storing, and tracking events from c
 
 ## Features
 
-- ✅ **Event Ingestion**: POST endpoint to accept events from clients
-- ✅ **Request Validation**: Strict schema validation with detailed error messages
-- ✅ **Persistent Storage**: SQLite/PostgreSQL backed event persistence
-- ✅ **In-Memory Cache**: Fast retrieval of recent events by user
-- ✅ **Multi-Vendor Tracking**: Automatic event forwarding to Segment, PostHog, and Mixpanel
-- ✅ **Request Tracking**: Request ID propagation across the call stack
-- ✅ **Error Handling**: Graceful failure modes with per-vendor retry logic
-- ✅ **Comprehensive Tests**: Full test coverage for API, validation, and tracking
+- **Event Ingestion**: POST endpoint to accept events from clients
+-  **Request Validation**: Strict schema validation with detailed error messages
+- **Persistent Storage**: SQLite/PostgreSQL backed event persistence
+- **In-Memory Cache**: Fast retrieval of recent events by user
+- **Multi-Vendor Tracking**: Automatic event forwarding to Segment, PostHog, and Mixpanel
+- **Request Tracking**: Request ID propagation across the call stack
+-  **Error Handling**: Graceful failure modes with per-vendor retry logic
 
 ## Quick Start
 
