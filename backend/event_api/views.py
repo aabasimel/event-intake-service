@@ -112,9 +112,9 @@ class EventView(APIView):
                 logger.error(f"Tracking error for event {event.id}: {str(e)}", exc_info=True)
                     
             response_data = {
-                "event_id": event.id,
-                "received_at": event.received_at.isoformat(),
-                "request_id": event.request_id
+                "id": event.id,
+                "accepted": True,
+                
             }
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
