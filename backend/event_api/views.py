@@ -11,6 +11,8 @@ from .serializers import EventSerializer, EventResponseSerializer
 from .models import Event
 from .storage import memory_store
 from .tracking import tracking_client
+from .error_capture import trigger_explode_error, DeliberateError
+
 
 def get_request_id(request):
     request_id = request.headers.get('X-Request-ID')
@@ -68,6 +70,10 @@ class EventView(APIView):
 
     def post(self,request):
         request_id = get_request_id(request)
+        try:
+            trigger_explode_error(request)
+        except DeliberateError:
+            raise
         event_id = f"evt_{uuid.uuid4().hex[:8]}"
         data = request.data.copy()
         data['request_id'] = request_id

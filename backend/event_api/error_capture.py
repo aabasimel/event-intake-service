@@ -11,6 +11,11 @@ from django.http import HttpRequest
 logger = logging.getLogger(__name__)
 
 
+class DeliberateError(Exception):
+    """Custom exception for deliberate error paths"""
+    pass
+
+
 class ErrorCaptureMiddleware:
     """
     Middleware to capture unhandled exceptions and log them in structured format
@@ -20,7 +25,6 @@ class ErrorCaptureMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        # Process the request
         response = self.get_response(request)
         return response
     
@@ -86,8 +90,56 @@ class ErrorCaptureMiddleware:
             return ip
         except:
             return 'unknown'
-    
+    def _extract_safe_input(self, request: Optional[HttpRequest]) -> Dict[str, Any]:
+        
+        if not request or not hasattr(request, 'data'):
+            return {}
+        
+        try:
+            data = getattr(request, 'data', {})
+            if not isinstance(data, dict):
+                return {'input_type': type(data).__name__}
+            
+            safe_input = {}
+            
+            for field in ['event', 'user_id']:
+                if field in data:
+                    value = data[field]
+                    if isinstance(value, str) and len(value) > 100:
+                        value = value[:100] + '...'
+                    safe_input[field] = value
+            
+            if 'metadata' in data and isinstance(data['metadata'], dict):
+                safe_input['metadata_size'] = len(str(data['metadata']))
+                safe_input['metadata_key_count'] = len(data['metadata'])
+            
+            safe_input['input_fields'] = list(data.keys())
+            
+            return safe_input
+            
+        except Exception:
+            return {'error': 'could_not_extract_input'}
     def _get_timestamp(self) -> str:
         """Get ISO timestamp"""
         from datetime import datetime
         return datetime.utcnow().isoformat() + 'Z'
+
+
+def trigger_explode_error(request: HttpRequest) -> None:
+    """
+    Trigger an exception if event == "explode"
+    This is a deliberately triggered error path for testing
+    """
+    try:
+        data = getattr(request, 'data', {})
+        if isinstance(data, dict) and data.get('event') == 'explode':
+            logger.warning("Deliberate error triggered: event == 'explode'")
+            
+            raise DeliberateError(
+                f"BOOM! Event 'explode' triggered at {request.path} "
+                f"for user {data.get('user_id', 'unknown')}"
+            )
+    except DeliberateError:
+        raise
+    except Exception as e:
+        pass
