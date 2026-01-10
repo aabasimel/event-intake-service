@@ -74,8 +74,8 @@ Create a new event.
 ```json
 {
   "event_id": "evt_abc12345",
-  "received_at": "2024-06-01T12:00:10.123456Z",
-  "request_id": "req_12345678"
+  "accepted": true,
+  
 }
 ```
 
