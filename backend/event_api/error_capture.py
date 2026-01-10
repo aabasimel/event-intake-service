@@ -67,7 +67,14 @@ class ErrorCaptureMiddleware:
         except Exception as log_error:
             logger.error(f"Failed to log exception: {log_error}", exc_info=True)
             logger.error(f"Original exception: {exception}", exc_info=True)
-
+    def _get_stack_trace(self, exception: Exception) -> str:
+        """Extract formatted stack trace"""
+        try:
+            return ''.join(traceback.format_exception(
+                type(exception), exception, exception.__traceback__
+            ))
+        except:
+            return "Stack trace unavailable"
     def _get_client_ip(self, request: HttpRequest) -> str:
         """Extract client IP safely"""
         try:
