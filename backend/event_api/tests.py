@@ -23,8 +23,8 @@ class EventAPITests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('event_id', response.data)
-        self.assertTrue(response.data['event_id'].startswith('evt_'))
+        self.assertIn('id', response.data)
+        self.assertTrue(response.data['id'].startswith('evt_'))
         self.assertEqual(len(memory_store), 1)
         stored_event = memory_store[0]
         self.assertEqual(stored_event['event'], data['event'])

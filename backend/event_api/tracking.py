@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 import hashlib
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class TrackingClient:
             'mixpanel_token': 'dummy_mixpanel_token_789',
             'enable_tracking': True
         }
+        self.simulated_failure_rate = float(os.getenv("TRACKING_SIMULATED_FAILURE_RATE", "0.0"))
 
     def track_event(
             self,
@@ -98,7 +100,7 @@ class TrackingClient:
         time.sleep(0.01)
 
         import random
-        if random.random()<0.1:
+        if self.simulated_failure_rate > 0 and random.random() < self.simulated_failure_rate:
             raise Exception("Simulated network error")
         
 tracking_client = TrackingClient()

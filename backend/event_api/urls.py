@@ -3,4 +3,5 @@ from .views import EventView
 
 urlpatterns = [
     path('v1/events', EventView.as_view(), name='create-event'),
+    path('v1/events/', EventView.as_view(), name='delete-events'),
 ]

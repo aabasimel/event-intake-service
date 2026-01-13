@@ -129,3 +129,23 @@ class EventView(APIView):
                 "message": "Invalid input data",
                 "details": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request):
+        request_id = get_request_id(request)
+        user_id = request.query_params.get('user_id')
+
+        if user_id:
+            deleted_db, _ = Event.objects.filter(user_id=user_id).delete()
+            before_cache = len(memory_store)
+            memory_store[:] = [event for event in memory_store if event.get('user_id') != user_id]
+            deleted_cache = before_cache - len(memory_store)
+        else:
+            deleted_db, _ = Event.objects.all().delete()
+            deleted_cache = len(memory_store)
+            memory_store.clear()
+
+        response = Response({
+            "deleted_db": deleted_db,
+            "deleted_cache": deleted_cache
+        }, status=status.HTTP_200_OK)
+        response['X-Request-ID'] = request_id
+        return response
