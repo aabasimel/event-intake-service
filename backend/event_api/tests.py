@@ -42,6 +42,25 @@ class EventAPITests(APITestCase):
         self.assertIn('exceeds 2KB limit', str(response.data['details']['metadata']))
         self.assertEqual(len(memory_store), 0)
 
+    def test_post_with_request_id_header(self):
+        """Test that POST with X-Request-ID header uses and returns that ID"""
+        url = reverse('create-event')
+        custom_request_id = 'req_custom_xyz'
+        data = {
+            "client_ts": "2024-06-01T12:00:00Z",
+            "event": "user_login",
+            "user_id": "u_789",
+            "metadata": {"method": "oauth"}
+        }
+        response = self.client.post(url, data, format='json', HTTP_X_REQUEST_ID=custom_request_id)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('id', response.data)
+        self.assertEqual(response['X-Request-ID'], custom_request_id)
+        
+        # Verify the custom request ID was stored with the event
+        stored_event = memory_store[0]
+        self.assertEqual(stored_event['request_id'], custom_request_id)
+
 class EventListTests(APITestCase):
     
     def setUp(self):
