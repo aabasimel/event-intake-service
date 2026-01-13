@@ -6,8 +6,7 @@ Content-Type: application/json
   "user_id": "user123",
   "client_ts": "2024-06-01T12:00:00Z",
   "metadata": {
-    "event_name": "new year",
-    "location": "Bremen"
+    "button": "signup"
   }
 }
 
