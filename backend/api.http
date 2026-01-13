@@ -2,7 +2,7 @@ POST http://localhost:8081/api/v1/events HTTP/1.1
 Content-Type: application/json
 
 {
-  "event": "Concert ",
+  "event": "sined_up",
   "user_id": "user123",
   "client_ts": "2024-06-01T12:00:00Z",
   "metadata": {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:8081/api/v1/events?user_id=user123&limit=20 HTTP/1.1
+GET http://localhost:8081/api/v1/events?user_id=user124&limit=20 HTTP/1.1
 Accept: application/json
 
 ###
