@@ -1,6 +1,6 @@
 ## 1. Request Flow (ASCII Diagram)
 ```text
-[Frontend]
+[Frontend ]
         |
         | POST /api/events
         v
@@ -18,6 +18,10 @@
         | save()
         v
 [PostgreSQL Database]
+        |
+        | (Async) Celery Task
+        v
+[3rd-party Monitoring Service]
 ```
 ## 2. Three Failure Modes
 
